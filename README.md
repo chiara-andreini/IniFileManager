@@ -1,5 +1,5 @@
 IniFileManager instructions:
 
-- Before running the tests check in the /test subdirectory: you will find a test.txt file.
-  Make sure you pass as a string the path of this file on your computer to the constructor of IniFileManager,
-  inside the IniFileManagerTest class, defined in the file IniFileManagerTest.cpp.
+- Before running the tests check in the /test subdirectory: you will find a test.txt file. 
+  Inside the IniFileManagerTest class, defined in the file IniFileManagerTest.cpp, there is a variable named "path".
+  Make sure you assign the variable "path" a string specifying the path of the file test.txt on your computer.
