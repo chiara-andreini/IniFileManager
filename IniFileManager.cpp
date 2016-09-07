@@ -34,83 +34,76 @@ void IniFileManager::parse() {
     //Parsing: file is read line by line:
     std::string line;
 
-    while (std::getline(file, line)) {
+    try {
 
-        //As it doesn't know what the line is, it initially only removes whitespaces at the margins of the line:
-        removeMarginWhites(line);
+        while (std::getline(file, line)) {
 
-        //If it finds the beginning of a new section:
-        if (line[0] == '[') {
+            //As it doesn't know what the line is, it initially only removes whitespaces at the margins of the line:
+            removeMarginWhites(line);
 
-            //Removes excess whitespaces from the name of the section:
-            line.erase(std::remove(line.begin(), line.end(), ' '), line.end());
+            //If it finds the beginning of a new section:
+            if (line[0] == '[') {
 
-            unsigned long int end = line.find_first_of(']');
+                //Removes excess whitespaces from the name of the section:
+                line.erase(std::remove(line.begin(), line.end(), ' '), line.end());
 
-            if (end != std::string::npos) {
+                unsigned long int end = line.find_first_of(']');
 
-                //Checks if currentSection is already handling a section:
-                if (!currentSection.name.empty()) {
+                if (end != std::string::npos) {
 
-                    //If so, the previous one is over, and it can store it in the list:
-                    sections.push_back(currentSection);
+                    //Checks if currentSection is already handling a section:
+                    if (!currentSection.name.empty()) {
 
-                    //Clears data for a reuse of the variable:
-                    currentSection.name.clear();
-                    currentSection.settings.clear();
-                    currentSection.comments.clear();
-                }
-                //Gets the name of the section, removing '[' and ']':
-                currentSection.name = line.substr(1, end - 1);
+                        //If so, the previous one is over, and it can store it in the list:
+                        sections.push_back(currentSection);
 
-            } else {
+                        //Clears data for a reuse of the variable:
+                        currentSection.name.clear();
+                        currentSection.settings.clear();
+                        currentSection.comments.clear();
+                    }
+                    //Gets the name of the section, removing '[' and ']':
+                    currentSection.name = line.substr(1, end - 1);
 
-                //No ']' found:
-                std::cout << "Error: No ']' found in section title." << std::endl;
-                std::cout << "Make sure your "
-                        "file is written according to the ini standard." << std::endl << std::endl;
+                } else
+                    throw SyntaxError(sectiontitle, line);
 
-                //Parsing is aborted to prevent wrong memorizations:
-                sections.clear();
-                return;
-            }
+            } else if (!line.empty() && (line[0] == ';' || line[0] == '#')) {
 
-        } else if (!line.empty() && (line[0] == ';' || line[0] == '#')) {
+                //If it finds a comment, whitespaces are not removed and it stores it in the vector:
+                currentSection.comments.push_back(line);
 
-            //If it finds a comment, whitespaces are not removed and it stores it in the vector:
-            currentSection.comments.push_back(line);
+            } else if (line.empty()) {
 
-        } else if (line.empty()) {
-
-            //If the line is empty, nothing is memorized;
-
-        } else {
-
-            //Last case possible is that the line is of the kind "key=value": all whitespaces are deleted
-            line.erase(std::remove(line.begin(), line.end(), ' '), line.end());
-
-            unsigned long int delim;
-            delim = line.find_first_of('=');
-
-            if (delim != std::string::npos) {
-                std::string key = line.substr(0, delim);
-                std::string value = line.substr(delim + 1);
-                //Inserimento:
-                currentSection.settings.insert(std::make_pair(key, value));
+                //If the line is empty, nothing is memorized;
 
             } else {
 
-                //If it couldn't find a '=' in the line...
-                std::cout << "Error: detected"
-                        " line in your file which is not in the form key = value. " << std::endl;
-                std::cout << "Make sure your "
-                        "file is written according to the ini standard." << std::endl << std::endl;
+                //Last case possible is that the line is of the kind "key=value": all whitespaces are deleted
+                line.erase(std::remove(line.begin(), line.end(), ' '), line.end());
 
-                //... parsing is aborted:
-                sections.clear();
-                return;
+                unsigned long int delim;
+                delim = line.find_first_of('=');
+
+                if (delim != std::string::npos) {
+                    std::string key = line.substr(0, delim);
+                    std::string value = line.substr(delim + 1);
+                    //Inserimento:
+                    currentSection.settings.insert(std::make_pair(key, value));
+
+                } else
+                    throw SyntaxError(ambiguousline, line);
             }
         }
+    } catch (SyntaxError & error) {
+
+        std::cerr << "Error: cannot read line " << "'" << error.getLine() << "'" << " properly." << std::endl;
+        if (error.getProblem() == sectiontitle) {
+            //No ']' found:
+            std::cerr << "A ']' is missing." << std::endl;
+        } else if (error.getProblem() == ambiguousline)
+            std::cerr << "It's not the title of a section, nor in the form key = value, nor a comment." << std::endl;
+        std::cerr << "Try again, making sure your file is written according to the ini standard.";
     }
 
     //When no more lines are left, it stores the last section being handled in the list:
@@ -411,41 +404,13 @@ const std::string IniFileManager::readAComment(std::string whichSection, unsigne
     }
 }
 
+SyntaxError::SyntaxError(ParseProblem whichProblem, std::string wrongLine) : problem(whichProblem), line (wrongLine){
+}
 
+const std::string &SyntaxError::getLine() const {
+    return line;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ParseProblem SyntaxError::getProblem() const {
+    return problem;
+}
