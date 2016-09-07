@@ -10,8 +10,10 @@
 #include <unordered_map>
 #include <list>
 #include <vector>
+#include <stdexcept>
 
 enum Mode {open, create};
+enum ParseProblem {sectiontitle, ambiguousline};
 
 class Section {
 public:
@@ -54,5 +56,17 @@ private:
     static bool copyIsNecessary;
 };
 
+class SyntaxError : public std::exception {
+public:
+    SyntaxError(ParseProblem whichProblem, std::string wrongLine);
+
+    const std::string & getLine() const;
+
+    ParseProblem getProblem() const;
+
+private:
+    std::string line;
+    ParseProblem problem;
+};
 
 #endif //INIFILEMANAGER_INIFILEMANAGER_H
