@@ -18,7 +18,7 @@ public:
          *
          */
 
-        test = new IniFileManager("TYPE/YOUR/DIRECTORY/FOR/test.txt", open);
+        EXPECT_NO_THROW(test = new IniFileManager("TYPE/YOUR/DIRECTORY/FOR/test.txt", open));
     }
 
     virtual ~IniFileManagerTest() {
