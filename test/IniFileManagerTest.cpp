@@ -5,30 +5,42 @@
 #include "gtest/gtest.h"
 #include "../IniFileManager.h"
 
+
 //Test fixture:
 class IniFileManagerTest : public ::testing::Test {
+
 public:
+
+    IniFileManager * test;
+    std::string path;
+
     IniFileManagerTest() {
 
 
-        /*          IMPORTANT WARNING:
-         *
-         * Ahead of everything else,
-         * make sure you write the right path for the file test.txt!
-         *
-         */
+            /*          IMPORTANT WARNING:
+             *
+             * Ahead of everything else,
+             * make sure you write the right path for the file test.txt!
+             *
+             */
 
-        EXPECT_NO_THROW(test = new IniFileManager("TYPE/YOUR/DIRECTORY/FOR/test.txt", open));
+             path = "TYPE/YOUR/DIRECTORY/FOR/test.txt";
+
+        test = new IniFileManager(path, open);
+
     }
 
     virtual ~IniFileManagerTest() {
         delete test;
     }
-
-    IniFileManager * test;
 };
 
-TEST_F(IniFileManagerTest, FileIsParsed) {
+TEST_F(IniFileManagerTest, NoParsingExceptionsWhenCorrect) {
+    
+    EXPECT_NO_THROW(IniFileManager * otherManager = new IniFileManager(path, open));
+}
+
+TEST_F(IniFileManagerTest, FileHasBeenParsed) {
 
     EXPECT_EQ(test->readAComment("FirstSection", 0), ";Comment 1");
 
@@ -40,7 +52,6 @@ TEST_F(IniFileManagerTest, FileIsParsed) {
 
     EXPECT_EQ(test->read("SecondSection", "key1"), "value1");
     EXPECT_EQ(test->read("SecondSection", "key2"), "value2");
-
 }
 
 TEST_F(IniFileManagerTest, ValueIsEdited) {
@@ -48,7 +59,6 @@ TEST_F(IniFileManagerTest, ValueIsEdited) {
     test->editValue("SecondSection", "key1", "differentvalue1");
 
     EXPECT_EQ(test->read("SecondSection", "key1"), "differentvalue1");
-
 }
 
 TEST_F(IniFileManagerTest, ValueIsStillEdited) {
@@ -69,7 +79,6 @@ TEST_F(IniFileManagerTest, LineIsDeleted) {
 TEST_F(IniFileManagerTest, LineIsStillDeleted) {
 
     EXPECT_EQ(test->read("FirstSection", "key2"), "");
-
 }
 
 TEST_F(IniFileManagerTest, LineIsAdded) {
@@ -78,14 +87,11 @@ TEST_F(IniFileManagerTest, LineIsAdded) {
     test->addLine("FirstSection", "key2", "othervalue");
 
     EXPECT_EQ(test->read("SecondSection", "key2"), "value2");
-
 }
 
 TEST_F(IniFileManagerTest, LineIsStillThere) {
 
     EXPECT_EQ(test->read("SecondSection", "key2"), "value2");
-
-
 }
 
 TEST_F(IniFileManagerTest, SectionIsDeleted) {
@@ -104,7 +110,6 @@ TEST_F(IniFileManagerTest, SectionIsStillDeleted) {
     EXPECT_EQ(test->read("SecondSection", "key2"), "");
     EXPECT_EQ(test->readAComment("SecondSection", 0), "");
     EXPECT_EQ(test->readAComment("SecondSection", 1), "");
-
 }
 
 TEST_F(IniFileManagerTest, CommentsandNewSectionAreAdded) {
@@ -121,7 +126,6 @@ TEST_F(IniFileManagerTest, CommentsandNewSectionAreAdded) {
     EXPECT_EQ(test->readAComment("SecondSection", 1), ";Comment 2");
     EXPECT_EQ(test->read("SecondSection", "key1"), "value1");
     EXPECT_EQ(test->read("SecondSection", "key2"), "value2");
-
 }
 
 
@@ -138,7 +142,6 @@ TEST_F(IniFileManagerTest, SectionIsCleared) {
     test->clearSection("FirstSection");
     EXPECT_EQ(test->read("FirstSection", "key1"), "");
     EXPECT_EQ(test->read("FirstSection", "key2"), "");
-
 }
 
 TEST_F(IniFileManagerTest, SectionIsStillEmpty) {
@@ -147,5 +150,4 @@ TEST_F(IniFileManagerTest, SectionIsStillEmpty) {
     EXPECT_EQ(test->read("FirstSection", "key2"), "");
     test->addLine("FirstSection", "key1", "value1");
     test->addLine("FirstSection", "key2", "value2");
-
 }
